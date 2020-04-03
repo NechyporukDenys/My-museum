@@ -2,27 +2,28 @@ package com.nechyporuk.museum.dao.impl;
 
 import com.nechyporuk.museum.config.HibernateUtil;
 import com.nechyporuk.museum.constant.ErrorMessage;
-import com.nechyporuk.museum.dao.AuthorDao;
-import com.nechyporuk.museum.entity.Author;
+import com.nechyporuk.museum.dao.ExcursionDao;
+import com.nechyporuk.museum.entity.Excursion;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class AuthorDaoImpl implements AuthorDao {
-
+@Transactional
+public class ExcursionDaoImpl implements ExcursionDao {
   @Override
-  public void save(Author author) {
+  public void save(Excursion entity) {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      session.save(author);
+      session.save(entity);
       transaction.commit();
     } catch (Exception e) {
       if (transaction != null) {
@@ -33,10 +34,9 @@ public class AuthorDaoImpl implements AuthorDao {
   }
 
   @Override
-  public List<Author> getAll() {
+  public List<Excursion> getAll() {
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-      List allAuthors = session.createQuery("from Author").getResultList();
-      return allAuthors;
+      return session.createQuery("from Excursion").getResultList();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -47,11 +47,11 @@ public class AuthorDaoImpl implements AuthorDao {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      Author author = session.get(Author.class, id);
-      if (author == null) {
-        throw new NotDeletedException(String.format(ErrorMessage.AUTHOR_NOT_DELETED_BY_ID, id));
+      Excursion excursion = session.get(Excursion.class, id);
+      if (excursion == null) {
+        throw new NotDeletedException(String.format(ErrorMessage.EXCURSION_NOT_DELETED_BY_ID, id));
       }
-      session.delete(author);
+      session.delete(excursion);
       transaction.commit();
     } catch (NotDeletedException e) {
       e.printStackTrace();
@@ -64,13 +64,13 @@ public class AuthorDaoImpl implements AuthorDao {
   }
 
   @Override
-  public void update(Author entity) {
+  public void update(Excursion entity) {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      Author author = session.get(Author.class, entity.getId());
-      if (author == null) {
-        throw new NotUpdatedException(String.format(ErrorMessage.AUTHOR_NOT_UPDATED_BY_ID, entity.getId()));
+      Excursion excursion = session.get(Excursion.class, entity.getId());
+      if (excursion == null) {
+        throw new NotUpdatedException(String.format(ErrorMessage.EXCURSION_NOT_UPDATED_BY_ID, entity.getId()));
       }
       session.merge(entity);
       transaction.commit();
@@ -85,14 +85,14 @@ public class AuthorDaoImpl implements AuthorDao {
   }
 
   @Override
-  public Optional<Author> getOneById(Long id) {
+  public Optional<Excursion> getOneById(Long id) {
     Transaction transaction = null;
-    Author author = null;
+    Excursion excursion = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      author = session.get(Author.class, id);
-      if (author == null) {
-        throw new NotFoundException(String.format(ErrorMessage.AUTHOR_NOT_FOUND_BY_ID, id));
+      excursion = session.get(Excursion.class, id);
+      if (excursion == null) {
+        throw new NotFoundException(String.format(ErrorMessage.EXCURSION_NOT_FOUND_BY_ID, id));
       }
       transaction.commit();
     } catch (NotFoundException e) {
@@ -104,6 +104,7 @@ public class AuthorDaoImpl implements AuthorDao {
       }
       e.printStackTrace();
     }
-    return Optional.of(author);
+    return Optional.of(excursion);
   }
+
 }

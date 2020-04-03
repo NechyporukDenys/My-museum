@@ -28,5 +28,8 @@ public class Excursion {
   private String schedule;
   @Column(name = "end_date")
   private Date endDate;
-  //Employee
+
+  @ManyToOne
+  @JoinColumn(name = "employee_id")
+  private Employee employee;
 }

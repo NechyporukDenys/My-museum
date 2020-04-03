@@ -2,27 +2,28 @@ package com.nechyporuk.museum.dao.impl;
 
 import com.nechyporuk.museum.config.HibernateUtil;
 import com.nechyporuk.museum.constant.ErrorMessage;
-import com.nechyporuk.museum.dao.AuthorDao;
-import com.nechyporuk.museum.entity.Author;
+import com.nechyporuk.museum.dao.EmployeePositionDao;
+import com.nechyporuk.museum.entity.EmployeePosition;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class AuthorDaoImpl implements AuthorDao {
-
+@Transactional
+public class EmployeePositionDaoImpl implements EmployeePositionDao {
   @Override
-  public void save(Author author) {
+  public void save(EmployeePosition entity) {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      session.save(author);
+      session.save(entity);
       transaction.commit();
     } catch (Exception e) {
       if (transaction != null) {
@@ -33,10 +34,9 @@ public class AuthorDaoImpl implements AuthorDao {
   }
 
   @Override
-  public List<Author> getAll() {
+  public List<EmployeePosition> getAll() {
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-      List allAuthors = session.createQuery("from Author").getResultList();
-      return allAuthors;
+      return session.createQuery("from EmployeePosition").getResultList();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -47,11 +47,11 @@ public class AuthorDaoImpl implements AuthorDao {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      Author author = session.get(Author.class, id);
-      if (author == null) {
-        throw new NotDeletedException(String.format(ErrorMessage.AUTHOR_NOT_DELETED_BY_ID, id));
+      EmployeePosition employeePosition = session.get(EmployeePosition.class, id);
+      if (employeePosition == null) {
+        throw new NotDeletedException(String.format(ErrorMessage.EMPLOYEE_POSITION_NOT_DELETED_BY_ID, id));
       }
-      session.delete(author);
+      session.delete(employeePosition);
       transaction.commit();
     } catch (NotDeletedException e) {
       e.printStackTrace();
@@ -64,13 +64,13 @@ public class AuthorDaoImpl implements AuthorDao {
   }
 
   @Override
-  public void update(Author entity) {
+  public void update(EmployeePosition entity) {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      Author author = session.get(Author.class, entity.getId());
-      if (author == null) {
-        throw new NotUpdatedException(String.format(ErrorMessage.AUTHOR_NOT_UPDATED_BY_ID, entity.getId()));
+      EmployeePosition employeePosition = session.get(EmployeePosition.class, entity.getId());
+      if (employeePosition == null) {
+        throw new NotUpdatedException(String.format(ErrorMessage.EMPLOYEE_POSITION_NOT_UPDATED_BY_ID, entity.getId()));
       }
       session.merge(entity);
       transaction.commit();
@@ -85,14 +85,14 @@ public class AuthorDaoImpl implements AuthorDao {
   }
 
   @Override
-  public Optional<Author> getOneById(Long id) {
+  public Optional<EmployeePosition> getOneById(Long id) {
     Transaction transaction = null;
-    Author author = null;
+    EmployeePosition employeePosition = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      author = session.get(Author.class, id);
-      if (author == null) {
-        throw new NotFoundException(String.format(ErrorMessage.AUTHOR_NOT_FOUND_BY_ID, id));
+      employeePosition = session.get(EmployeePosition.class, id);
+      if (employeePosition == null) {
+        throw new NotFoundException(String.format(ErrorMessage.EMPLOYEE_POSITION_NOT_FOUND_BY_ID, id));
       }
       transaction.commit();
     } catch (NotFoundException e) {
@@ -104,6 +104,7 @@ public class AuthorDaoImpl implements AuthorDao {
       }
       e.printStackTrace();
     }
-    return Optional.of(author);
+    return Optional.of(employeePosition);
   }
+
 }
