@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,6 +20,15 @@ public class Employee {
   private String firstName;
   @Column(name = "last_name")
   private String lastName;
-  //Hall
-  //EmployeePosition
+
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(name = "employee_hall",
+          joinColumns = @JoinColumn(name = "employee_id"),
+          inverseJoinColumns = @JoinColumn(name = "hall_id"))
+  private List<Hall> halls;
+
+  @ManyToOne
+  @JoinColumn(name = "employee_position_id")
+  private EmployeePosition employeePosition;
+
 }
