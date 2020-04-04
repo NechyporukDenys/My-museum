@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data
@@ -17,8 +18,10 @@ public class Employee {
   @Column(name = "id")
   private Long id;
   @Column(name = "first_name")
+  @NotBlank
   private String firstName;
   @Column(name = "last_name")
+  @NotBlank
   private String lastName;
 
   @ManyToMany(fetch = FetchType.EAGER)

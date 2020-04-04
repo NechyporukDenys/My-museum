@@ -7,17 +7,19 @@ import com.nechyporuk.museum.entity.Excursion;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 public class ExcursionDaoImpl implements ExcursionDao {
+  private static Logger logger = LogManager.getLogger(ExcursionDaoImpl.class);
+
   @Override
   public void save(Excursion entity) {
     Transaction transaction = null;
@@ -25,7 +27,9 @@ public class ExcursionDaoImpl implements ExcursionDao {
       transaction = session.beginTransaction();
       session.save(entity);
       transaction.commit();
+      logger.info("Excursion saved");
     } catch (Exception e) {
+      logger.error("Failed to save excursion: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -38,6 +42,7 @@ public class ExcursionDaoImpl implements ExcursionDao {
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       return session.createQuery("from Excursion").getResultList();
     } catch (Exception e) {
+      logger.error("Failed to get all excursions: " + e);
       throw new RuntimeException(e);
     }
   }
@@ -53,9 +58,12 @@ public class ExcursionDaoImpl implements ExcursionDao {
       }
       session.delete(excursion);
       transaction.commit();
+      logger.info(String.format("Excursion with id %d successfully removed", id));
     } catch (NotDeletedException e) {
+      logger.error("Failed to remove excursion: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to remove excursion: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -74,9 +82,12 @@ public class ExcursionDaoImpl implements ExcursionDao {
       }
       session.merge(entity);
       transaction.commit();
+      logger.info(String.format("Excursion with id %d successfully updated", entity.getId()));
     } catch (NotUpdatedException e) {
+      logger.error("Failed to update excursion: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to update excursion: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -96,9 +107,11 @@ public class ExcursionDaoImpl implements ExcursionDao {
       }
       transaction.commit();
     } catch (NotFoundException e) {
+      logger.error("Failed to get excursion by id: " + e);
       e.printStackTrace();
       return Optional.empty();
     } catch (Exception e) {
+      logger.error("Failed to get excursion by id: " + e);
       if (transaction != null) {
         transaction.rollback();
       }

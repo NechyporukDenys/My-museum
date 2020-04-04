@@ -7,17 +7,19 @@ import com.nechyporuk.museum.entity.Hall;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 public class HallDaoImpl implements HallDao {
+  private static Logger logger = LogManager.getLogger(HallDaoImpl.class);
+
   @Override
   public void save(Hall entity) {
     Transaction transaction = null;
@@ -25,7 +27,9 @@ public class HallDaoImpl implements HallDao {
       transaction = session.beginTransaction();
       session.save(entity);
       transaction.commit();
+      logger.info("Hall saved");
     } catch (Exception e) {
+      logger.error("Failed to save hall: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -38,6 +42,7 @@ public class HallDaoImpl implements HallDao {
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       return session.createQuery("from Hall").getResultList();
     } catch (Exception e) {
+      logger.error("Failed to get all halls: " + e);
       throw new RuntimeException(e);
     }
   }
@@ -53,9 +58,12 @@ public class HallDaoImpl implements HallDao {
       }
       session.delete(hall);
       transaction.commit();
+      logger.info(String.format("Hall with id %d successfully removed", id));
     } catch (NotDeletedException e) {
+      logger.error("Failed to remove hall: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to remove hall: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -74,9 +82,12 @@ public class HallDaoImpl implements HallDao {
       }
       session.merge(entity);
       transaction.commit();
+      logger.info(String.format("Hall with id %d successfully updated", entity.getId()));
     } catch (NotUpdatedException e) {
+      logger.error("Failed to update hall: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to update hall: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -96,9 +107,11 @@ public class HallDaoImpl implements HallDao {
       }
       transaction.commit();
     } catch (NotFoundException e) {
+      logger.error("Failed to get hall by id: " + e);
       e.printStackTrace();
       return Optional.empty();
     } catch (Exception e) {
+      logger.error("Failed to get hall by id: " + e);
       if (transaction != null) {
         transaction.rollback();
       }

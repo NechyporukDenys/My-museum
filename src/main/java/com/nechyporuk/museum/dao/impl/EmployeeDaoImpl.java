@@ -7,6 +7,8 @@ import com.nechyporuk.museum.entity.Employee;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,7 @@ import java.util.Optional;
 
 @Repository
 public class EmployeeDaoImpl implements EmployeeDao {
+  private static Logger logger = LogManager.getLogger(ExhibitionDaoImpl.class);
   @Override
   public void save(Employee entity) {
     Transaction transaction = null;
@@ -23,7 +26,9 @@ public class EmployeeDaoImpl implements EmployeeDao {
       transaction = session.beginTransaction();
       session.save(entity);
       transaction.commit();
+      logger.info("Employee saved");
     } catch (Exception e) {
+      logger.error("Failed to save employee: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -37,6 +42,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
       List allEmployees = session.createQuery("from Employee").getResultList();
       return allEmployees;
     } catch (Exception e) {
+      logger.error("Failed to get all employees: " + e);
       throw new RuntimeException(e);
     }
   }
@@ -52,9 +58,12 @@ public class EmployeeDaoImpl implements EmployeeDao {
       }
       session.delete(employee);
       transaction.commit();
+      logger.info(String.format("Employee with id %d successfully removed", id));
     } catch (NotDeletedException e) {
+      logger.error("Failed to remove employee: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to remove employee: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -73,9 +82,12 @@ public class EmployeeDaoImpl implements EmployeeDao {
       }
       session.merge(entity);
       transaction.commit();
+      logger.info(String.format("Employee with id %d successfully updated", entity.getId()));
     } catch (NotUpdatedException e) {
+      logger.error("Failed to update employee: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to update employee: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -95,9 +107,11 @@ public class EmployeeDaoImpl implements EmployeeDao {
       }
       transaction.commit();
     } catch (NotFoundException e) {
+      logger.error("Failed to get employee by id: " + e);
       e.printStackTrace();
       return Optional.empty();
     } catch (Exception e) {
+      logger.error("Failed to get employee by id: " + e);
       if (transaction != null) {
         transaction.rollback();
       }

@@ -7,17 +7,19 @@ import com.nechyporuk.museum.entity.Material;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 public class MaterialDaoImpl implements MaterialDao {
+  private static Logger logger = LogManager.getLogger(MaterialDaoImpl.class);
+
   @Override
   public void save(Material entity) {
     Transaction transaction = null;
@@ -25,7 +27,9 @@ public class MaterialDaoImpl implements MaterialDao {
       transaction = session.beginTransaction();
       session.save(entity);
       transaction.commit();
+      logger.info("Material saved");
     } catch (Exception e) {
+      logger.error("Failed to save material: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -38,6 +42,7 @@ public class MaterialDaoImpl implements MaterialDao {
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       return session.createQuery("from Material").getResultList();
     } catch (Exception e) {
+      logger.error("Failed to get all authors: " + e);
       throw new RuntimeException(e);
     }
   }
@@ -53,9 +58,12 @@ public class MaterialDaoImpl implements MaterialDao {
       }
       session.delete(material);
       transaction.commit();
+      logger.info(String.format("Material with id %d successfully removed", id));
     } catch (NotDeletedException e) {
+      logger.error("Failed to remove material: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to remove material: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -74,9 +82,12 @@ public class MaterialDaoImpl implements MaterialDao {
       }
       session.merge(entity);
       transaction.commit();
+      logger.info(String.format("Material with id %d successfully updated", entity.getId()));
     } catch (NotUpdatedException e) {
+      logger.error("Failed to update material: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to update material: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -96,9 +107,11 @@ public class MaterialDaoImpl implements MaterialDao {
       }
       transaction.commit();
     } catch (NotFoundException e) {
+      logger.error("Failed to get material by id: " + e);
       e.printStackTrace();
       return Optional.empty();
     } catch (Exception e) {
+      logger.error("Failed to get material by id: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
