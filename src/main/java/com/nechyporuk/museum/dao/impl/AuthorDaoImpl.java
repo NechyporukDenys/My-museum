@@ -7,6 +7,8 @@ import com.nechyporuk.museum.entity.Author;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
@@ -16,7 +18,7 @@ import java.util.Optional;
 
 @Repository
 public class AuthorDaoImpl implements AuthorDao {
-
+  private static Logger logger = LogManager.getLogger(AuthorDaoImpl.class);
   @Override
   public void save(Author author) {
     Transaction transaction = null;
@@ -24,7 +26,9 @@ public class AuthorDaoImpl implements AuthorDao {
       transaction = session.beginTransaction();
       session.save(author);
       transaction.commit();
+      logger.info("Author saved");
     } catch (Exception e) {
+      logger.error("Failed to save author: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -38,6 +42,7 @@ public class AuthorDaoImpl implements AuthorDao {
       List allAuthors = session.createQuery("from Author").getResultList();
       return allAuthors;
     } catch (Exception e) {
+      logger.error("Failed to get all authors: " + e);
       throw new RuntimeException(e);
     }
   }
@@ -53,9 +58,12 @@ public class AuthorDaoImpl implements AuthorDao {
       }
       session.delete(author);
       transaction.commit();
+      logger.info(String.format("Author with id %d successfully removed", id));
     } catch (NotDeletedException e) {
+      logger.error("Failed to remove author: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to remove author: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -74,9 +82,12 @@ public class AuthorDaoImpl implements AuthorDao {
       }
       session.merge(entity);
       transaction.commit();
+      logger.info(String.format("Author with id %d successfully updated", entity.getId()));
     } catch (NotUpdatedException e) {
+      logger.error("Failed to update author: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to update author: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -96,9 +107,11 @@ public class AuthorDaoImpl implements AuthorDao {
       }
       transaction.commit();
     } catch (NotFoundException e) {
+      logger.error("Failed to get author by id: " + e);
       e.printStackTrace();
       return Optional.empty();
     } catch (Exception e) {
+      logger.error("Failed to get author by id: " + e);
       if (transaction != null) {
         transaction.rollback();
       }

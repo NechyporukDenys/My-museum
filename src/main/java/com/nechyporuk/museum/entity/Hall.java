@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data
@@ -18,6 +19,7 @@ public class Hall {
   @Column(name = "id")
   private Long id;
   @Column(name = "name")
+  @NotBlank
   private String name;
   @Column(name = "style")
   private String style;

@@ -7,17 +7,19 @@ import com.nechyporuk.museum.entity.Exhibition;
 import com.nechyporuk.museum.exception.NotDeletedException;
 import com.nechyporuk.museum.exception.NotFoundException;
 import com.nechyporuk.museum.exception.NotUpdatedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 public class ExhibitionDaoImpl implements ExhibitionDao {
+  private static Logger logger = LogManager.getLogger(ExcursionDaoImpl.class);
+
   @Override
   public void save(Exhibition entity) {
     Transaction transaction = null;
@@ -25,7 +27,9 @@ public class ExhibitionDaoImpl implements ExhibitionDao {
       transaction = session.beginTransaction();
       session.save(entity);
       transaction.commit();
+      logger.info("Exhibition saved");
     } catch (Exception e) {
+      logger.error("Failed to save exhibition: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -38,6 +42,7 @@ public class ExhibitionDaoImpl implements ExhibitionDao {
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       return session.createQuery("from Exhibition").getResultList();
     } catch (Exception e) {
+      logger.error("Failed to get all exhibitions: " + e);
       throw new RuntimeException(e);
     }
   }
@@ -53,9 +58,12 @@ public class ExhibitionDaoImpl implements ExhibitionDao {
       }
       session.delete(exhibition);
       transaction.commit();
+      logger.info(String.format("Exhibition with id %d successfully removed", id));
     } catch (NotDeletedException e) {
+      logger.error("Failed to remove exhibition: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to remove exhibition: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -74,9 +82,12 @@ public class ExhibitionDaoImpl implements ExhibitionDao {
       }
       session.merge(entity);
       transaction.commit();
+      logger.info(String.format("Exhibition with id %d successfully updated", entity.getId()));
     } catch (NotUpdatedException e) {
+      logger.error("Failed to update exhibition: " + e);
       e.printStackTrace();
     } catch (Exception e) {
+      logger.error("Failed to update exhibition: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
@@ -96,9 +107,11 @@ public class ExhibitionDaoImpl implements ExhibitionDao {
       }
       transaction.commit();
     } catch (NotFoundException e) {
+      logger.error("Failed to get exhibition by id: " + e);
       e.printStackTrace();
       return Optional.empty();
     } catch (Exception e) {
+      logger.error("Failed to get exhibition by id: " + e);
       if (transaction != null) {
         transaction.rollback();
       }
